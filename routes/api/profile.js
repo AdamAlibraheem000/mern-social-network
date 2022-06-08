@@ -140,12 +140,32 @@ router.get('/user/:user_id', async (req,res) => {
         res.json(profile);
     } catch (err) {
         console.error(err.message);
-        
+
         // fixes server error when searching for profile id that is not valid
         if(err.kind === "ObjectId"){
             return res.status(400).json({msg: "Profile not found"});
         }
 
+        res.status(500).send('Server error')
+    }
+})
+
+// @route  DELETE api/profile
+// @desc   DELETE profile, user & posts
+// @access  Private
+
+// auth middleware required for accessing token
+router.delete('/', auth, async (req,res) => {
+    try {
+        // @todo -remove user's posts
+        // Remove profile
+        await Profile.findOneAndRemove({user: req.user.id});
+        // Remove user
+        await User.findOneAndRemove({_id: req.user.id});
+        
+        res.json({msg: "User removed"});
+    } catch (err) {
+        console.error(err.message);
         res.status(500).send('Server error')
     }
 })
